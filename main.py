@@ -5,14 +5,26 @@ from detectron2.data import MetadataCatalog
 from detectron2.checkpoint import DetectionCheckpointer
 from risf.config import get_cfg, set_global_cfg
 from risf.evaluation import DatasetEvaluators, verify_results
+from risf.modeling import  build_model
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup
 import logging
-from detectron2.utils.events import EventStorage
-import time
-import torch
-import copy
+
 
 class Trainer(DefaultTrainer):
+
+    @classmethod
+    def build_model(cls, cfg):
+        """
+        Returns:
+            torch.nn.Module:
+
+        It now calls :func:`detectron2.modeling.build_model`.
+        Overwrite it if you'd like a different model.
+        """
+        model = build_model(cfg)
+        logger = logging.getLogger(__name__)
+        logger.info("Model:\n{}".format(model))
+        return model
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):

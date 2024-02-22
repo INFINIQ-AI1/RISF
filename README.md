@@ -36,6 +36,10 @@ Extensive experiments on MS-COCO and PASCAL VOC show that the proposed RISF subs
     python -m pip install detectron2 -f \
     https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html
     ```
+- Install requirements
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 
 
