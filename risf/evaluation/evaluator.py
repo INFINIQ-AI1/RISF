@@ -108,10 +108,7 @@ def inference_on_dataset(model, data_loader, evaluator, cfg=None):
                 outputs = cmclip.execute_calibration(inputs, outputs)
             torch.cuda.synchronize()
             total_compute_time += time.time() - start_compute_time
-            if hasattr(model, "module"):
-                evaluator.process(inputs, outputs, model.module.roi_heads.mj_instances)
-            else:
-                evaluator.process(inputs, outputs, model.roi_heads.mj_instances)
+            evaluator.process(inputs, outputs)
 
             if (idx + 1) % logging_interval == 0:
                 duration = time.time() - start_time

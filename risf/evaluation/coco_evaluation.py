@@ -56,7 +56,7 @@ class COCOEvaluator(DatasetEvaluator):
         self._predictions = []
         self._coco_results = []
 
-    def process(self, inputs, outputs, logit = None):
+    def process(self, inputs, outputs):
         """
         Args:
             inputs: the inputs to a COCO model (e.g., GeneralizedRCNN).
@@ -67,14 +67,12 @@ class COCOEvaluator(DatasetEvaluator):
         """
         for input, output in zip(inputs, outputs):
             prediction = {"image_id": input["image_id"]}
-
+            # TODO this is ugly
             if "instances" in output:
                 instances = output["instances"].to(self._cpu_device)
-                prediction["instances"] = instances_to_coco_json(instances, input["image_id"], logit)
-            if "proposals" in output:
-                prediction["proposals"] = output["proposals"].to(self._cpu_device)
-            if len(prediction) > 1:
-                self._predictions.append(prediction)
+                prediction["instances"] = instances_to_coco_json(
+                    instances, input["image_id"])
+            self._predictions.append(prediction)
 
     def evaluate(self):
         if self._distributed:
@@ -243,7 +241,7 @@ class COCOEvaluator(DatasetEvaluator):
         return results
 
 
-def instances_to_coco_json(instances, img_id, logit = None):
+def instances_to_coco_json(instances, img_id):
     """
     Dump an "Instances" object to a COCO-format json that's used for evaluation.
 
@@ -266,22 +264,12 @@ def instances_to_coco_json(instances, img_id, logit = None):
 
     results = []
     for k in range(num_instance):
-        if scores[k] > 0.5:
-            result = {
-                "image_id": img_id,
-                "category_id": classes[k],
-                "bbox": boxes[k],
-                "score": scores[k],
-                "logit" : logit[k]
-            }
-        else:
-            result = {
-                "image_id": img_id,
-                "category_id": classes[k],
-                "bbox": boxes[k],
-                "score": scores[k],
-            }
-        
+        result = {
+            "image_id": img_id,
+            "category_id": classes[k],
+            "bbox": boxes[k],
+            "score": scores[k],
+        }
         results.append(result)
     return results
 

@@ -301,7 +301,7 @@ class FastRCNNOutputs(object):
         Returns:
             A dict of losses (scalar tensors) containing keys "loss_cls" and "loss_box_reg".
         """
-        if self.losstype != 'bnrlloss':
+        if self.losstype != 'bnrl_loss':
             loss = {
             "loss_cls": self.softmax_cross_entropy_loss(),
             "loss_box_reg": self.smooth_l1_loss(),
@@ -431,17 +431,16 @@ class BNRL(nn.Module):
                  reduction: str = 'mean',
                  ignore_index: int = -100):
         super().__init__()
-        ## beta = 1.3 alpha : balanced setting
         self.alpha = alpha
         self.beta = beta
         self.epsilon = epsilon
         self.gamma = gamma
         self.ignore_index = ignore_index
         self.reduction = reduction
-        self.weight = weight if weight is not None else 1
+        self.weight = weight[0] if weight is not None else 1
 
         self.nll_loss = nn.NLLLoss(
-            weight=weight, reduction='none', ignore_index=ignore_index)
+            weight=self.weight, reduction='none', ignore_index=ignore_index)
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         if x.ndim > 2:

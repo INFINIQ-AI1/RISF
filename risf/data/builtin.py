@@ -19,7 +19,7 @@ def register_all_coco(root="datasets"):
         for shot in [1, 2, 3, 5, 10, 30]:
             for seed in range(10):
                 name = "coco14_trainval_{}_{}shot_seed{}".format(prefix, shot, seed)
-                METASPLITS.append((name, "coco/images/trainval", ""))
+                METASPLITS.append((name, "coco/trainval2014", ""))
 
     for name, imgdir, annofile in METASPLITS:
         register_meta_coco(

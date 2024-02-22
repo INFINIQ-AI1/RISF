@@ -94,7 +94,7 @@ class ROIHeads(torch.nn.Module):
         self.cls_agnostic_bbox_reg    = cfg.MODEL.ROI_BOX_HEAD.CLS_AGNOSTIC_BBOX_REG
         self.smooth_l1_beta           = cfg.MODEL.ROI_BOX_HEAD.SMOOTH_L1_BETA
         
-        self.losstype = cfg.MODEL.ROI_BOX_HEAD.CLS_LOSS_TYPE
+        self.losstype = cfg.MODEL.ROI_HEADS.CLS_LOSS_TYPE
         self.alpha = cfg.MODEL.ROI_HEADS.ALPHA
         self.beta = 1 - self.alpha
         self.epsilon = cfg.MODEL.ROI_HEADS.EPSILON
@@ -311,7 +311,6 @@ class Res5ROIHeads(ROIHeads):
         self.box_predictor = ROI_HEADS_OUTPUT_REGISTRY.get(output_layer)(
             cfg, out_channels, self.num_classes, self.cls_agnostic_bbox_reg
         )
-        self.mj_instances = []
 
     def _build_res5_block(self, cfg):
         # fmt: off
@@ -384,16 +383,6 @@ class Res5ROIHeads(ROIHeads):
                 self.test_nms_thresh,
                 self.test_detections_per_img,
             )
-            if image_id is not None:
-                #cuda to cpu
-                scores = pred_instances[0].scores.cpu().tolist()
-                category_ids = pred_instances[0].pred_classes.cpu().tolist()
-                bboxes = pred_instances[0].pred_boxes.tensor.cpu().tolist()
-                logit = box_features.mean(dim=[2, 3])[filter_ind].cpu().tolist()
-                # for s,c,b,l in zip(scores, category_ids, bboxes, logit):
-                #     instances.append({"image_id" : image_id , "category_id" : c,\
-                #         "bbox":b , "score" :s , "logit" :l})
-                self.mj_instances = logit
             return pred_instances, {}
 
 
