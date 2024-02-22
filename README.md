@@ -20,7 +20,7 @@ Extensive experiments on MS-COCO and PASCAL VOC show that the proposed RISF subs
 # Installation
 ## Requirements
 - Linux with Python ≥ 3.7
-- PyTorch ≥ 1.8 and torchvision that matches the PyTorch installation.
+- PyTorch ≥ 1.9 and torchvision that matches the PyTorch installation.
 
     We recommend you to use a conda environment
     ```bash
@@ -29,11 +29,12 @@ Extensive experiments on MS-COCO and PASCAL VOC show that the proposed RISF subs
     ```
 - Install Pytorch
     ```
-    pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+    pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
     ```
 - Install Detectron2
     ```
-    python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.8/index.html
+    python -m pip install detectron2 -f \
+    https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html
     ```
 
 
@@ -78,6 +79,11 @@ python main.py --num-gpus {your_gpus} --config-file configs/coco/fsod_10shot_see
 RISF builds on previous works code base such as [detectron2](https://github.com/facebookresearch/detectron2) and [DeFRCN](https://github.com/er-muyue/DeFRCN?tab=readme-ov-file). 
 If you found RISF useful please consider citing these works as well.
 
+# Trouble shooting
+- AttributeError: module 'distutils' has no attribute 'version'
+    ```bash
+    pip install setuptools==59.5.0
+    ```
 # Citing 
 ```
 @article{JUNG2024103956,
