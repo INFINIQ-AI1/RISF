@@ -1,53 +1,11 @@
-import os
 from detectron2.utils import comm
-from detectron2.engine import launch
-from detectron2.data import MetadataCatalog
+from detectron2.engine import launch, default_argument_parser
 from detectron2.checkpoint import DetectionCheckpointer
+
 from risf.config import get_cfg, set_global_cfg
-from risf.evaluation import DatasetEvaluators, verify_results
-from risf.modeling import  build_model
-from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup
-import logging
+from risf.evaluation import verify_results
+from risf.engine import Trainer, default_setup
 
-
-class Trainer(DefaultTrainer):
-
-    @classmethod
-    def build_model(cls, cfg):
-        """
-        Returns:
-            torch.nn.Module:
-
-        It now calls :func:`detectron2.modeling.build_model`.
-        Overwrite it if you'd like a different model.
-        """
-        model = build_model(cfg)
-        logger = logging.getLogger(__name__)
-        logger.info("Model:\n{}".format(model))
-        return model
-
-    @classmethod
-    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
-        if output_folder is None:
-            output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-        evaluator_list = []
-        evaluator_type = MetadataCatalog.get(dataset_name).evaluator_type
-        if evaluator_type == "coco":
-            from risf.evaluation import COCOEvaluator
-            evaluator_list.append(COCOEvaluator(dataset_name, True, output_folder))
-        if evaluator_type == "pascal_voc":
-            from risf.evaluation import PascalVOCDetectionEvaluator
-            return PascalVOCDetectionEvaluator(dataset_name)
-        if len(evaluator_list) == 0:
-            raise NotImplementedError(
-                "no Evaluator for the dataset {} with the type {}".format(
-                    dataset_name, evaluator_type
-                )
-            )
-        if len(evaluator_list) == 1:
-            return evaluator_list[0]
-        return DatasetEvaluators(evaluator_list)
-        
 def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)

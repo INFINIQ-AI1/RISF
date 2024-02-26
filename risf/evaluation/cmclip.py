@@ -36,19 +36,27 @@ class CMCLIP:
         
 
     def text_encode(self):
-        self.classes = copy.deepcopy(MetadataCatalog.get(self.cfg.DATASETS.TEST[0]).thing_classes)
-        novel_id = copy.deepcopy(MetadataCatalog.get(self.cfg.DATASETS.TEST[0]).novel_dataset_id_to_contiguous_id)
-        thing_id = copy.deepcopy(MetadataCatalog.get(self.cfg.DATASETS.TEST[0]).thing_dataset_id_to_contiguous_id)
-        self.exclude_mapper = {thing_id[k]:idx for idx,k in enumerate(novel_id.keys())}
+        dsname = self.cfg.DATASETS.TEST[0]
+        
+        self.classes = copy.deepcopy(MetadataCatalog.get(dsname).thing_classes)
+        novel_id = copy.deepcopy(MetadataCatalog.get(dsname).get("novel_dataset_id_to_contiguous_id"))
+        if novel_id != None:
+            thing_id = copy.deepcopy(MetadataCatalog.get(dsname).thing_dataset_id_to_contiguous_id)
+            self.class_mapper = {thing_id[k]:idx for idx,k in enumerate(novel_id.keys())}
+        elif 'voc' in dsname:
+            self.class_mapper = {k:idx for idx,k in enumerate(range(15,20))}
+        else:
+            print('implement class mapper!')
+            raise NotImplementedError
         
         prompts = []
         self.classes.append('background')
-        for idx,_class in enumerate(self.classes):
-            # if idx in self.exclude_cls:
-            #     prompt = "."
-            # else:
-            prompt = f"{_class}"
-            prompts.append(prompt)
+        for idx, _class in enumerate(self.classes):
+            if idx in self.exclude_cls:
+                pass
+            else:
+                prompt = f"a photo of {_class}"
+                prompts.append(prompt)
         text_tokens = clip.tokenize(prompts).cuda()
         text_features = self.imagenet_model.encode_text(text_tokens)
         return text_features / text_features.norm(dim = -1, keepdim = True)
@@ -84,28 +92,25 @@ class CMCLIP:
         assert ileft <= iright
 
         idx = []
-        tmp_classes = []
+        pred_class_list = []
         for i in range(ileft, iright):
-            tmp_class = int(dts[0]['instances'].pred_classes[i])
-            # if tmp_class in self.exclude_cls:
-            #    pass
-            # else:
-            #     tmp_classes.append(self.exclude_mapper[tmp_class])
-            #     idx.append(i)
-            tmp_classes.append(tmp_class)
-            idx.append(i)
+            pred_class = int(dts[0]['instances'].pred_classes[i])
+            if pred_class in self.exclude_cls:
+               pass
+            else:
+                pred_class_list.append(self.class_mapper[pred_class])
+                idx.append(i)
         
         idx = np.array(idx)
-        tmp_classes = np.array(tmp_classes)
+        pred_class_list = np.array(pred_class_list)
         boxes = [dts[0]['instances'].pred_boxes[idx]]
         features, box_features = self.extract_roi_features(img, boxes)
 
         features /=features.norm(dim = -1, keepdim= True)
         simmilarity =  features @self.class_vector.T
         
-        
-        score = torch.exp(simmilarity.float()*120)/torch.sum(torch.exp(simmilarity.float()*120), axis = 1).unsqueeze(1)
-        dts[0]['instances'].scores[idx] = dts[0]['instances'].scores[idx] * self.alpha + score[range(len(idx)),tmp_classes] * (1 - self.alpha)
+        score = torch.exp(simmilarity.float()*100)/torch.sum(torch.exp(simmilarity.float()*100), axis = 1).unsqueeze(1)
+        dts[0]['instances'].scores[idx] = dts[0]['instances'].scores[idx] * self.alpha + score[range(len(idx)), pred_class_list] * (1 - self.alpha) # range(len(idx)) : already score is sorted in "boxes = [dts[0]['instances'].pred_boxes[idx]]"
 
         return dts
     
