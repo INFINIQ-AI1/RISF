@@ -34,5 +34,4 @@ SOLVER:
 TEST:
   CMCLIP_ALPHA : 0.7
   CMCLIP_ENABLE: True
-  CMCLIP_MODELPATH: "/Path/to/ImageNet/Pre-Train/Weight"
 OUTPUT_DIR: "/Path/to/Output/Dir"

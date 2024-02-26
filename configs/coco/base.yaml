@@ -21,4 +21,4 @@ SOLVER:
   CHECKPOINT_PERIOD: 5000
 TEST:
   EVAL_PERIOD : 5000
-OUTPUT_DIR: "checkpoints/coco/defrcn/R-101-base"
+OUTPUT_DIR: "checkpoints/coco/risf/R-101-base"

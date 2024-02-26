@@ -24,4 +24,4 @@ SOLVER:
   WARMUP_ITERS: 100
 TEST:
   EVAL_PERIOD : 5000
-OUTPUT_DIR: "checkpoints/voc/R-101/base1"
+OUTPUT_DIR: "checkpoints/voc/risf/R-101/base1"
